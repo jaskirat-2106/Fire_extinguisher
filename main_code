@@ -1,0 +1,58 @@
+#include <Arduino.h>
+#include <Servo.h>
+
+#define SENSOR_PIN 2
+#define BUZZER_PIN 3
+#define RELAY_PIN 4
+const int SCAN_SERVO_PIN = 9;   
+const int FAN_SERVO_PIN = 10;   
+
+const int PAN_MIN = 20;   
+const int PAN_MAX = 160;  
+
+Servo scanServo;
+Servo fanServo;
+int scanAngle = PAN_MIN;  
+int scanDirection = 1;      
+
+void setup() 
+{
+  
+  pinMode(SENSOR_PIN, INPUT);   
+  pinMode(RELAY_PIN, OUTPUT);
+  pinMode(BUZZER_PIN, OUTPUT); // <-- ADDED THIS
+
+  
+  scanServo.attach(SCAN_SERVO_PIN);
+  fanServo.attach(FAN_SERVO_PIN);
+  
+  
+  scanServo.write(scanAngle);
+  fanServo.write((PAN_MIN + PAN_MAX) / 2);
+  
+ 
+  digitalWrite(RELAY_PIN, HIGH);
+}
+
+void loop() 
+{
+  int sensorValue = digitalRead(SENSOR_PIN);
+
+
+  if (sensorValue == LOW)
+  {
+    tone(BUZZER_PIN, 1000);  
+    fanServo.write(scanAngle);
+    digitalWrite(RELAY_PIN, LOW);   
+  else
+  {
+    noTone(BUZZER_PIN); 
+    digitalWrite(RELAY_PIN, HIGH);
+    scanServo.write(scanAngle);
+    delay(30);
+    scanAngle += scanDirection;
+    if (scanAngle >= PAN_MAX || scanAngle <= PAN_MIN) {
+      scanDirection = -scanDirection; 
+    }  
+  }
+}
